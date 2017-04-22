@@ -20,9 +20,10 @@ char* modifyAndCheckForErrors(char *expression);
 void main()
 {
 	char *test = (char *)calloc(1000, sizeof(char));
-	strcpy(test, "0.1.2");
+	strcpy(test, "7/4*6/8+9-20-5-6^3+4!");
 	test = modifyAndCheckForErrors(test);
-	printf("%.2f\n", solveMath(test));
+	printf("%s\n", test);
+	printf("%.4f\n", solveMath(test));
 }
 double factorial(int number) //Returns the factorial of a given number.
 {
@@ -127,6 +128,7 @@ double solveMath(char *problem) //Returns the number the expression problem is e
 					strcpyUntilPlaceInMem(tempStr, problem, problem + i);
 					problem = insertVALUEintoSTRinsteadOfPTR1toPTR2(factorial(atoi(tempStr)), problem, problem, problem + i);
 					printf("%s\n", problem);
+					i = 1;
 					break;
 				}
 				else if (!isdigit(problem[j]))
@@ -134,6 +136,7 @@ double solveMath(char *problem) //Returns the number the expression problem is e
 					strcpyUntilPlaceInMem(tempStr, problem + j + 1, problem + i);
 					problem = insertVALUEintoSTRinsteadOfPTR1toPTR2(factorial(atoi(tempStr)), problem, problem + j + 1, problem + i);
 					i = 1;
+					printf("%s\n", problem);
 					break;
 				}
 	}
@@ -148,14 +151,14 @@ double solveMath(char *problem) //Returns the number the expression problem is e
 					tempNum1 = atof(tempStr);
 					break;
 				}
-				else if (!isdigit(problem[j]) && problem[j] != '.' && problem[j] != '-')
+				else if (!isdigit(problem[j]) && problem[j] != '.')
 				{
 					strcpyUntilPlaceInMem(tempStr, problem + j + 1, problem + i);
 					tempNum1 = atof(tempStr);
 					break;
 				}
 			for (k = i + 1; k < strlen(problem) + 1; k++)
-				if (!isdigit(problem[k]) && problem[k] != '.' && problem[k] != '-')
+				if (!isdigit(problem[k]) && problem[k] != '.')
 				{
 					strcpyUntilPlaceInMem(tempStr, problem + i + 1, problem + k);
 					tempNum2 = atof(tempStr);
@@ -166,6 +169,7 @@ double solveMath(char *problem) //Returns the number the expression problem is e
 			else
 				problem = insertVALUEintoSTRinsteadOfPTR1toPTR2(pow(tempNum1, tempNum2), problem, problem, problem + k - 1);
 			i = 1;
+			printf("%s\n", problem);
 		}
 	//Calculating multiplication and division.
 	for (i = 0; i < strlen(problem); i++)
@@ -178,14 +182,14 @@ double solveMath(char *problem) //Returns the number the expression problem is e
 					tempNum1 = atof(tempStr);
 					break;
 				}
-				else if (!isdigit(problem[j]) && problem[j] != '.' && problem[j] != '-')
+				else if (!isdigit(problem[j]) && problem[j] != '.')
 				{
 					strcpyUntilPlaceInMem(tempStr, problem + j + 1, problem + i);
 					tempNum1 = atof(tempStr);
 					break;
 				}
 			for (k = i + 1; k < strlen(problem) + 1; k++)
-				if (!isdigit(problem[k]) && problem[k] != '.' && problem[k] != '-')
+				if (!isdigit(problem[k]) && problem[k] != '.')
 				{
 					strcpyUntilPlaceInMem(tempStr, problem + i + 1, problem + k);
 					tempNum2 = atof(tempStr);
@@ -196,10 +200,11 @@ double solveMath(char *problem) //Returns the number the expression problem is e
 			else
 				problem = problem[i] == '*' ? insertVALUEintoSTRinsteadOfPTR1toPTR2(tempNum1 * tempNum2, problem, problem, problem + k - 1) : insertVALUEintoSTRinsteadOfPTR1toPTR2(tempNum1 / tempNum2, problem, problem, problem + k - 1);
 			i = 1;
+			printf("%s\n", problem);
 		}
-	//Calculating addition.
+	//Calculating addition and subtraction.
 	for (i = 0; i < strlen(problem); i++)
-		if (problem[i] == '+')
+		if (problem[i] == '+' || problem[i] == '-')
 		{
 			for (j = i ? i - 1 : i; j >= 0; j--)
 				if (j == 0)
@@ -208,57 +213,38 @@ double solveMath(char *problem) //Returns the number the expression problem is e
 					tempNum1 = atof(tempStr);
 					break;
 				}
-				else if (!isdigit(problem[j]) && problem[j] != '.' && problem[j] != '-')
+				else if (!isdigit(problem[j]) && problem[j] != '.')
 				{
 					strcpyUntilPlaceInMem(tempStr, problem + j + 1, problem + i);
 					tempNum1 = atof(tempStr);
 					break;
 				}
 			for (k = i + 1; k < strlen(problem) + 1; k++)
-				if (!isdigit(problem[k]) && problem[k] != '.' && problem[k] != '-')
+				if (!isdigit(problem[k]) && problem[k] != '.')
 				{
 					strcpyUntilPlaceInMem(tempStr, problem + i + 1, problem + k);
 					tempNum2 = atof(tempStr);
 					break;
 				}
-			if (j)
-				problem = insertVALUEintoSTRinsteadOfPTR1toPTR2(tempNum1 + tempNum2, problem, problem + j + 1, problem + k - 1);
+			if (problem[i] == '+') {
+				if (j)
+					problem = insertVALUEintoSTRinsteadOfPTR1toPTR2(tempNum1 + tempNum2, problem, problem + j + 1, problem + k - 1);
+				else
+					problem = insertVALUEintoSTRinsteadOfPTR1toPTR2(tempNum1 + tempNum2, problem, problem, problem + k - 1);
+			}
 			else
-				problem = insertVALUEintoSTRinsteadOfPTR1toPTR2(tempNum1 + tempNum2, problem, problem, problem + k - 1);
+			{
+				if (j)
+					problem = insertVALUEintoSTRinsteadOfPTR1toPTR2(tempNum1 - tempNum2, problem, problem + j + 1, problem + k - 1);
+				else
+					problem = insertVALUEintoSTRinsteadOfPTR1toPTR2(tempNum1 - tempNum2, problem, problem, problem + k - 1);
+			}
 			i = 1;
-		}
-	//Calculating subtraction.
-	for (i = 1; i < strlen(problem); i++)
-		if (problem[i] == '-')
-		{
-			for (j = i ? i - 1 : i; j >= 0; j--)
-				if (j == 0)
-				{
-					strcpyUntilPlaceInMem(tempStr, problem, problem + i);
-					tempNum1 = atof(tempStr);
-					break;
-				}
-				else if (!isdigit(problem[j]) && problem[j] != '.' && problem[j] != '-')
-				{
-					strcpyUntilPlaceInMem(tempStr, problem + j + 1, problem + i);
-					tempNum1 = atof(tempStr);
-					break;
-				}
-			for (k = i + 1; k < strlen(problem) + 1; k++)
-				if (!isdigit(problem[k]) && problem[k] != '.' && problem[k] != '-')
-				{
-					strcpyUntilPlaceInMem(tempStr, problem + i + 1, problem + k);
-					tempNum2 = atof(tempStr);
-					break;
-				}
-			if (j)
-				problem = insertVALUEintoSTRinsteadOfPTR1toPTR2(tempNum1 - tempNum2, problem, problem + j + 1, problem + k - 1);
-			else
-				problem = insertVALUEintoSTRinsteadOfPTR1toPTR2(tempNum1 - tempNum2, problem, problem, problem + k - 1);
-			i = 1;
+			printf("%s\n", problem);
 		}
 	tempNum1 = atof(problem);
 	free(problem);
+	free(tempStr);
 	return tempNum1;
 }
 void strcpyUntilPlaceInMem(char *dest, char *source, char *place) //Copies source to dest until reaching either the pointer place or '\0'.
@@ -277,7 +263,7 @@ char* insertVALUEintoSTRinsteadOfPTR1toPTR2(double value, char *str, char *ptr1,
 		strcpy(part2, ptr2 + 1);
 	else
 		strcpy(part2, "\0");
-	sprintf(result, "%s%f%s", part1, value, part2);
+	sprintf(result, "%s%.4f%s", part1, value, part2);
 	free(part1);
 	free(part2);
 	free(str);
