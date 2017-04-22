@@ -1,3 +1,4 @@
+//TODO - upper case to lower case.
 #define _CRT_SECURE_NO_WARNINGS
 #include <stdio.h>
 #include <math.h>
@@ -11,14 +12,16 @@ void checkForAllocationFailure(char *ptr);
 double solveMath(char *problem);
 char* insertVALUEintoSTRinsteadOfPTR1toPTR2(double value, char *str, char *ptr1, char *ptr2);
 void strcpyUntilPlaceInMem(char *dest, char *source, char *place);
-//TODO - char* changeLettersToActualValue(char *str);
+char* changeLettersToActualValue(char *str);
 char* fixLettersAndAsterisks(char *str);
 char* insertAsteriskAfter(char *str, char *ptr);
 void main()
 {
 	char *test = (char *)calloc(1000, sizeof(char));
-	strcpy(test, "2ep84ee2pe3p8p"); //
+	strcpy(test, "2ep84p9e"); 
 	test = fixLettersAndAsterisks(test);
+	printf("%s\n", test);
+	test = changeLettersToActualValue(test);
 	printf("%s\n", test);
 }
 double factorial(int number) //Returns the factorial of a given number.
@@ -133,7 +136,7 @@ char* insertVALUEintoSTRinsteadOfPTR1toPTR2(double value, char *str, char *ptr1,
 	checkForAllocationFailure(result);
 	strcpyUntilPlaceInMem(part1, str, ptr1);
 	strcpy(part2, ptr2 + 1);
-	sprintf(result, "%s%.2f%s", part1, value, part2);
+	sprintf(result, "%s%f%s", part1, value, part2);
 	free(part1);
 	free(part2);
 	free(str);
@@ -167,4 +170,12 @@ char* insertAsteriskAfter(char *str, char *ptr) //Returns a given string with '*
 	result = (char *)realloc(result, (strlen(result) + 1) * sizeof(char));
 	checkForAllocationFailure(result);
 	return result;
+}
+char* changeLettersToActualValue(char *str)
+{
+	int i;
+	for (i = 0; i < strlen(str); i++)
+		if (str[i] == 'p') str = insertVALUEintoSTRinsteadOfPTR1toPTR2(3.141592653, str, str + i, str + i);
+		else if (str[i] == 'e') str = insertVALUEintoSTRinsteadOfPTR1toPTR2(2.718281828, str, str + i, str + i);
+	return str;
 }
