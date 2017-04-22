@@ -1,4 +1,3 @@
-//TODO - negative fact check.
 #define _CRT_SECURE_NO_WARNINGS
 #include <stdio.h>
 #include <math.h>
@@ -21,7 +20,7 @@ char* modifyAndCheckForErrors(char *expression);
 void main()
 {
 	char *test = (char *)calloc(1000, sizeof(char));
-	strcpy(test, "3^12/144");
+	strcpy(test, "0.1.2");
 	test = modifyAndCheckForErrors(test);
 	printf("%.2f\n", solveMath(test));
 }
@@ -56,6 +55,15 @@ void checkIllegalMath(char *str) //Prints an error message and exits the program
 			free(str);
 			exit(1);
 		}
+		if (str[i] == '(' && str[i + 1] == '-')
+			for (j = i + 2; j < strlen(str) - 1; j++)
+				if (str[j] == ')' && str[j + 1] == '!')
+				{
+					printf("ERROR: NEGATIVE FACTORIAL.\n");
+					free(str);
+					exit(1);
+				}
+				else if (str[j] == '+' || str[j] == '-' || str[j] == '*' || str[j] == '^' || str[j] == '/' || str[j] == '(' || str[j] == ')') break;
 		if (str[i] == '(') parentheses++;
 		if (str[i] == ')') parentheses--;
 		if (str[i] == '.')
@@ -86,7 +94,7 @@ void checkIllegalMath(char *str) //Prints an error message and exits the program
 					free(str);
 					exit(1);
 				}
-					else if (str[i] == '+' || str[i] == '-' || str[i] == '*' || str[i] == '^' || str[i] == '/' || str[i] == '(' || str[i] == ')') break;
+					else if (str[j] == '+' || str[j] == '-' || str[j] == '*' || str[j] == '^' || str[j] == '/' || str[j] == '(' || str[j] == ')') break;
 		}
 	}
 	if (parentheses)
