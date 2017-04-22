@@ -17,12 +17,13 @@ char* fixAsterisks(char *str);
 char* insertAsteriskAfter(char *str, char *ptr);
 void lowerCase(char *str);
 char* modifyAndCheckForErrors(char *expression);
+//TODO - double solveExpression(char *expression);
 void main()
 {
 	char *test = (char *)calloc(1000, sizeof(char));
-	strcpy(test, "2^-3");
+	strcpy(test, "3^12/144");
 	test = modifyAndCheckForErrors(test);
-	solveMath(test);
+	printf("%.2f\n", solveMath(test));
 }
 double factorial(int number) //Returns the factorial of a given number.
 {
@@ -188,7 +189,7 @@ double solveMath(char *problem) //Returns the number the expression problem is e
 				problem = problem[i] == '*' ? insertVALUEintoSTRinsteadOfPTR1toPTR2(tempNum1 * tempNum2, problem, problem, problem + k - 1) : insertVALUEintoSTRinsteadOfPTR1toPTR2(tempNum1 / tempNum2, problem, problem, problem + k - 1);
 			i = 1;
 		}
-	//Calculating addition and subtraction.
+	//Calculating addition.
 	for (i = 0; i < strlen(problem); i++)
 		if (problem[i] == '+')
 		{
@@ -218,7 +219,37 @@ double solveMath(char *problem) //Returns the number the expression problem is e
 				problem = insertVALUEintoSTRinsteadOfPTR1toPTR2(tempNum1 + tempNum2, problem, problem, problem + k - 1);
 			i = 1;
 		}
-	tempNum1 = atof(problem)
+	//Calculating subtraction.
+	for (i = 1; i < strlen(problem); i++)
+		if (problem[i] == '-')
+		{
+			for (j = i ? i - 1 : i; j >= 0; j--)
+				if (j == 0)
+				{
+					strcpyUntilPlaceInMem(tempStr, problem, problem + i);
+					tempNum1 = atof(tempStr);
+					break;
+				}
+				else if (!isdigit(problem[j]) && problem[j] != '.' && problem[j] != '-')
+				{
+					strcpyUntilPlaceInMem(tempStr, problem + j + 1, problem + i);
+					tempNum1 = atof(tempStr);
+					break;
+				}
+			for (k = i + 1; k < strlen(problem) + 1; k++)
+				if (!isdigit(problem[k]) && problem[k] != '.' && problem[k] != '-')
+				{
+					strcpyUntilPlaceInMem(tempStr, problem + i + 1, problem + k);
+					tempNum2 = atof(tempStr);
+					break;
+				}
+			if (j)
+				problem = insertVALUEintoSTRinsteadOfPTR1toPTR2(tempNum1 - tempNum2, problem, problem + j + 1, problem + k - 1);
+			else
+				problem = insertVALUEintoSTRinsteadOfPTR1toPTR2(tempNum1 - tempNum2, problem, problem, problem + k - 1);
+			i = 1;
+		}
+	tempNum1 = atof(problem);
 	free(problem);
 	return tempNum1;
 }
@@ -248,6 +279,7 @@ char* insertVALUEintoSTRinsteadOfPTR1toPTR2(double value, char *str, char *ptr1,
 }
 char* fixAsterisks(char *str) //Adds '*' to a given string in appropriate places.
 {
+	//TODO - parentheses.
 	unsigned int i;
 	for (i = 0; i < strlen(str); i++)
 		if ((str[i] == 'e' || str[i] == 'p') && (isdigit(str[i + 1]) || str[i + 1] == 'e' || str[i + 1] == 'p'))
