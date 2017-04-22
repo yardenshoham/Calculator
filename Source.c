@@ -16,14 +16,13 @@ char* fixAsterisks(char *str);
 char* insertAsteriskAfter(char *str, char *ptr);
 void lowerCase(char *str);
 char* modifyAndCheckForErrors(char *expression);
-//TODO - double solveExpression(char *expression);
+double solveExpression(char *expression);
 void main()
 {
 	char *test = (char *)calloc(1000, sizeof(char));
-	strcpy(test, "7/4*6/8+9-20-5-6^3+4!");
+	strcpy(test, "2e^2+7(4^2)p6-7e");
 	test = modifyAndCheckForErrors(test);
 	printf("%s\n", test);
-	printf("%.4f\n", solveMath(test));
 }
 double factorial(int number) //Returns the factorial of a given number.
 {
@@ -273,13 +272,12 @@ char* insertVALUEintoSTRinsteadOfPTR1toPTR2(double value, char *str, char *ptr1,
 }
 char* fixAsterisks(char *str) //Adds '*' to a given string in appropriate places.
 {
-	//TODO - parentheses.
 	unsigned int i;
 	for (i = 0; i < strlen(str); i++)
-		if ((str[i] == 'e' || str[i] == 'p') && (isdigit(str[i + 1]) || str[i + 1] == 'e' || str[i + 1] == 'p'))
+		if (((str[i] == 'e' || str[i] == 'p') && (isdigit(str[i + 1]) || str[i + 1] == 'e' || str[i + 1] == 'p' || str[i + 1] == '(')) || (isdigit(str[i]) && str[i + 1] == '('))
 			str = insertAsteriskAfter(str, str + i);
 	for (i = 1; i < strlen(str); i++)
-		if ((str[i] == 'e' || str[i] == 'p') && (isdigit(str[i - 1]) || str[i - 1] == 'e' || str[i - 1] == 'p'))
+		if (((str[i] == 'e' || str[i] == 'p') && (isdigit(str[i - 1]) || str[i - 1] == 'e' || str[i - 1] == 'p' || str[i - 1] == ')')) || (str[i - 1] == ')' && isdigit(str[i])))
 			str = insertAsteriskAfter(str, str + i - 1);
 	return str;
 }
@@ -317,4 +315,8 @@ char* modifyAndCheckForErrors(char *expression) //Returns a given string so it w
 	expression = changeLettersToActualValue(fixAsterisks(deleteIllegalChars(expression)));
 	checkIllegalMath(expression);
 	return expression;
+}
+double solveExpression(char *expression)
+{
+	//TODO
 }
