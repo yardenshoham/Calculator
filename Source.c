@@ -1,4 +1,6 @@
+//Calculator by Yarden Shoham 2017
 #define _CRT_SECURE_NO_WARNINGS
+#define USER_INPUT_SIZE 1500
 #include <stdio.h>
 #include <math.h>
 #include <ctype.h>
@@ -19,10 +21,12 @@ char* modifyAndCheckForErrors(char *expression);
 double solveExpression(char *expression);
 void main()
 {
-	char *test = (char *)calloc(1000, sizeof(char));
-	strcpy(test, "2e^2+7(4^2)p6-7e");
-	test = modifyAndCheckForErrors(test);
-	printf("%s\n", test);
+	char *userInput = (char *)calloc(USER_INPUT_SIZE, sizeof(char));
+	checkForAllocationFailure(userInput);
+	printf("Welcome to Yarden's calculator! Enter a mathematical expression to get its result.\n*To enter the number Pi use 'p'.\n> ");
+	gets_s(userInput, USER_INPUT_SIZE);
+	userInput = modifyAndCheckForErrors(userInput);
+	printf("The answer is %.3f.\n", solveExpression(userInput));
 }
 double factorial(int number) //Returns the factorial of a given number.
 {
@@ -47,7 +51,25 @@ void checkIllegalMath(char *str) //Prints an error message and exits the program
 {
 	unsigned int i, j;
 	int parentheses = 0;
-	for (i = 0; i < strlen(str) - 1; i++)
+	if (strlen(str) == 1)
+	{
+		printf("ERROR: EXPRESSION TOO SHORT.\n");
+		free(str);
+		exit(1);
+	}
+	if (!isdigit(*str) && *str != '-' && *str != '(')
+	{
+		printf("ERROR: FIRST OBJECT IS NOT A NUMBER.\n");
+		free(str);
+		exit(1);
+	}
+	if (!isdigit(str[strlen(str) - 1]) && str[strlen(str) - 1] != '!' && str[strlen(str) - 1] != ')')
+	{
+		printf("ERROR: LAST OBJECT IS NOT A NUMBER.\n");
+		free(str);
+		exit(1);
+	}
+	for (i = 0; i < strlen(str); i++)
 	{
 		if ((str[i] == '+' || str[i] == '-' || str[i] == '*' || str[i] == '^' || str[i] == '/') && (str[i + 1] == '+' || str[i + 1] == '*' || str[i + 1] == '^' || str[i + 1] == '!' || str[i + 1] == '/'))
 		{
@@ -112,14 +134,14 @@ void checkForAllocationFailure(char *ptr) //Exits from the program if ptr == NUL
 		exit(1);
 	}
 }
-double solveMath(char *problem) //Returns the number the expression problem is equal to.
+double solveMath(char *problem) //Returns the number the expression problem is equal to. Can't handle parentheses.
 {
 	unsigned int i, j, k;
-	char *tempStr = (char *)calloc(30 * strlen(problem), sizeof(char));
+	char *tempStr = (char *)calloc(15 * strlen(problem), sizeof(char));
 	double tempNum1, tempNum2;
 	checkForAllocationFailure(tempStr);
 	//Calculating factorial.
-	for (i = 0; i < strlen(problem); i++) {
+	for (i = *problem == '-' ? 1 : 0; i < strlen(problem); i++) {
 		if (problem[i] == '!')
 			for (j = i ? i - 1 : i; j >= 0; j--)
 				if (j == 0 && isdigit(problem[j]))
@@ -127,20 +149,20 @@ double solveMath(char *problem) //Returns the number the expression problem is e
 					strcpyUntilPlaceInMem(tempStr, problem, problem + i);
 					problem = insertVALUEintoSTRinsteadOfPTR1toPTR2(factorial(atoi(tempStr)), problem, problem, problem + i);
 					printf("%s\n", problem);
-					i = 1;
+					i = 0;
 					break;
 				}
 				else if (!isdigit(problem[j]))
 				{
 					strcpyUntilPlaceInMem(tempStr, problem + j + 1, problem + i);
 					problem = insertVALUEintoSTRinsteadOfPTR1toPTR2(factorial(atoi(tempStr)), problem, problem + j + 1, problem + i);
-					i = 1;
+					i = 0;
 					printf("%s\n", problem);
 					break;
 				}
 	}
 	//Calculating power.
-	for (i = 0; i < strlen(problem); i++)
+	for (i = *problem == '-' ? 1 : 0; i < strlen(problem); i++)
 		if (problem[i] == '^')
 		{
 			for (j = i ? i - 1 : i; j >= 0; j--)
@@ -167,11 +189,11 @@ double solveMath(char *problem) //Returns the number the expression problem is e
 				problem = insertVALUEintoSTRinsteadOfPTR1toPTR2(pow(tempNum1, tempNum2), problem, problem + j + 1, problem + k - 1);
 			else
 				problem = insertVALUEintoSTRinsteadOfPTR1toPTR2(pow(tempNum1, tempNum2), problem, problem, problem + k - 1);
-			i = 1;
+			i = *problem == '-' ? 0 : -1;
 			printf("%s\n", problem);
 		}
 	//Calculating multiplication and division.
-	for (i = 0; i < strlen(problem); i++)
+	for (i = *problem == '-' ? 1 : 0; i < strlen(problem); i++)
 		if (problem[i] == '*' || problem[i] == '/')
 		{
 			for (j = i ? i - 1 : i; j >= 0; j--)
@@ -198,11 +220,11 @@ double solveMath(char *problem) //Returns the number the expression problem is e
 				problem = problem[i] == '*' ? insertVALUEintoSTRinsteadOfPTR1toPTR2(tempNum1 * tempNum2, problem, problem + j + 1, problem + k - 1) : insertVALUEintoSTRinsteadOfPTR1toPTR2(tempNum1 / tempNum2, problem, problem + j + 1, problem + k - 1);
 			else
 				problem = problem[i] == '*' ? insertVALUEintoSTRinsteadOfPTR1toPTR2(tempNum1 * tempNum2, problem, problem, problem + k - 1) : insertVALUEintoSTRinsteadOfPTR1toPTR2(tempNum1 / tempNum2, problem, problem, problem + k - 1);
-			i = 1;
+			i = *problem == '-' ? 0 : -1;
 			printf("%s\n", problem);
 		}
 	//Calculating addition and subtraction.
-	for (i = 0; i < strlen(problem); i++)
+	for (i = *problem == '-' ? 1 : 0; i < strlen(problem); i++)
 		if (problem[i] == '+' || problem[i] == '-')
 		{
 			for (j = i ? i - 1 : i; j >= 0; j--)
@@ -218,7 +240,7 @@ double solveMath(char *problem) //Returns the number the expression problem is e
 					tempNum1 = atof(tempStr);
 					break;
 				}
-			for (k = i + 1; k < strlen(problem) + 1; k++)
+			for (k = problem[i + 1] == '-' ? i + 2 : i + 1; k < strlen(problem) + 1; k++)
 				if (!isdigit(problem[k]) && problem[k] != '.')
 				{
 					strcpyUntilPlaceInMem(tempStr, problem + i + 1, problem + k);
@@ -238,7 +260,7 @@ double solveMath(char *problem) //Returns the number the expression problem is e
 				else
 					problem = insertVALUEintoSTRinsteadOfPTR1toPTR2(tempNum1 - tempNum2, problem, problem, problem + k - 1);
 			}
-			i = 1;
+			i = *problem == '-' ? 0 : -1;
 			printf("%s\n", problem);
 		}
 	tempNum1 = atof(problem);
@@ -262,7 +284,7 @@ char* insertVALUEintoSTRinsteadOfPTR1toPTR2(double value, char *str, char *ptr1,
 		strcpy(part2, ptr2 + 1);
 	else
 		strcpy(part2, "\0");
-	sprintf(result, "%s%.4f%s", part1, value, part2);
+	sprintf(result, "%s%.10f%s", part1, value, part2);
 	free(part1);
 	free(part2);
 	free(str);
@@ -297,11 +319,11 @@ char* insertAsteriskAfter(char *str, char *ptr) //Returns a given string with '*
 	checkForAllocationFailure(result);
 	return result;
 }
-char* changeLettersToActualValue(char *str) //Returns a pointer to a given string with 'p' as "3.141592653" and 'e' as "2.718281828".
+char* changeLettersToActualValue(char *str) //Returns a pointer to a given string with 'p' as "3.14159265359" and 'e' as "2.71828182845".
 {
 	unsigned int i;
 	for (i = 0; i < strlen(str); i++)
-		if (str[i] == 'p') str = insertVALUEintoSTRinsteadOfPTR1toPTR2(3.141592653, str, str + i, str + i);
+		if (str[i] == 'p') str = insertVALUEintoSTRinsteadOfPTR1toPTR2(3.14159265359, str, str + i, str + i);
 		else if (str[i] == 'e') str = insertVALUEintoSTRinsteadOfPTR1toPTR2(2.718281828, str, str + i, str + i);
 	return str;
 }
@@ -316,7 +338,23 @@ char* modifyAndCheckForErrors(char *expression) //Returns a given string so it w
 	checkIllegalMath(expression);
 	return expression;
 }
-double solveExpression(char *expression)
+double solveExpression(char *expression) //Returns the number the expression problem is equal to.
 {
-	//TODO
+	unsigned i, j;
+	char *tempStr;
+	//Simplify all parentheses.
+	for (i = 0; i <= strlen(expression); i++)
+		if (expression[i] == '(')
+			for (j = i + 1; 1; j++)
+				if (expression[j] == ')')
+				{
+					tempStr = (char *)calloc(strlen(expression) + 1, sizeof(char));
+					checkForAllocationFailure(tempStr);
+					strcpyUntilPlaceInMem(tempStr, expression + i + 1, expression + j);
+					expression = insertVALUEintoSTRinsteadOfPTR1toPTR2(solveMath(tempStr), expression, expression + i, expression + j);
+					i = -1;
+					break;
+				}
+	//Calculate final value.
+	return solveMath(expression);
 }
