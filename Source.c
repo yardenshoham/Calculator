@@ -114,7 +114,7 @@ void checkIllegalMath(char *str) //Prints an error message and exits the program
 				free(str);
 				exit(1);
 			}
-			for (j = i + 1; j < strlen(str) - 1; j++)
+			for (j = i + 1; j < strlen(str); j++)
 				if (str[j] == '.')
 				{
 					printf("ERROR: MISPLACED DECIMAL POINT.\n");
@@ -127,7 +127,8 @@ void checkIllegalMath(char *str) //Prints an error message and exits the program
 					free(str);
 					exit(1);
 				}
-					else if (str[j] == '+' || str[j] == '-' || str[j] == '*' || str[j] == '^' || str[j] == '/' || str[j] == '(' || str[j] == ')') break;
+					else if (str[j] == '+' || str[j] == '-' || str[j] == '*' || str[j] == '^' || str[j] == '/' || str[j] == '(' || str[j] == ')')
+						break;
 		}
 	}
 	if (parentheses)
