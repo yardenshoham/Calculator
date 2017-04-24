@@ -7,7 +7,7 @@
 #include <stdlib.h>
 #include <string.h>
 double factorial(int number);
-char* deleteIllegalChars(char* str);
+char* fixAndDeleteIllegalChars(char* str);
 void checkIllegalMath(char *str);
 void checkForAllocationFailure(char *ptr);
 double solveMath(char *problem);
@@ -26,7 +26,7 @@ void main()
 	printf("Welcome to Yarden's calculator! Enter a mathematical expression to get its result.\n*To enter the number Pi use 'p'.\n> ");
 	gets_s(userInput, USER_INPUT_SIZE);
 	userInput = modifyAndCheckForErrors(userInput);
-	printf("The answer is %.3f.\n", solveExpression(userInput));
+	printf("The answer is %.2f.\n", solveExpression(userInput));
 }
 double factorial(int number) //Returns the factorial of a given number.
 {
@@ -34,7 +34,7 @@ double factorial(int number) //Returns the factorial of a given number.
 	for (; number > 1; number--) result *= number;
 	return result;
 }
-char* deleteIllegalChars(char* str) //Returns a given string with illegal mathematical characters removed.
+char* fixAndDeleteIllegalChars(char* str) //Returns a given string with illegal mathematical characters removed and fixes weird parentheses.
 {
 	char *result = (char *)calloc(strlen(str) + 1, sizeof(char));
 	unsigned int i, j;
@@ -42,6 +42,10 @@ char* deleteIllegalChars(char* str) //Returns a given string with illegal mathem
 	for (i = 0, j = 0; i < strlen(str); i++)
 		if (isdigit(str[i]) || str[i] == '.' || str[i] == 'p' || str[i] == 'e' || str[i] == '+' || str[i] == '-' || str[i] == '*' || str[i] == '!' || str[i] == '^' || str[i] == '/' || str[i] == '(' || str[i] == ')')
 			result[j++] = str[i];
+		else if (str[i] == '[' || str[i] == '{')
+			result[j++] = '(';
+		else if (str[i] == ']' || str[i] == '}')
+			result[j++] = ')';
 	free(str);
 	result = (char *)realloc(result, ++j * sizeof(char));
 	checkForAllocationFailure(result);
@@ -49,7 +53,6 @@ char* deleteIllegalChars(char* str) //Returns a given string with illegal mathem
 }
 void checkIllegalMath(char *str) //Prints an error message and exits the program if there are illegal math operations in str.
 {
-	//TODO - check ().
 	unsigned int i, j;
 	int parentheses = 0;
 	if (strlen(str) == 1)
@@ -72,6 +75,12 @@ void checkIllegalMath(char *str) //Prints an error message and exits the program
 	}
 	for (i = 0; i < strlen(str); i++)
 	{
+		if (str[i] == '(' && str[i + 1] == ')')
+		{
+			printf("ERROR: EMPTY PARENTHESES.\n");
+			free(str);
+			exit(1);
+		}
 		if ((str[i] == '+' || str[i] == '-' || str[i] == '*' || str[i] == '^' || str[i] == '/') && (str[i + 1] == '+' || str[i + 1] == '*' || str[i + 1] == '^' || str[i + 1] == '!' || str[i + 1] == '/'))
 		{
 			printf("ERROR: CONSECUTIVE OPERATORS.\n");
@@ -149,7 +158,6 @@ double solveMath(char *problem) //Returns the number the expression problem is e
 				{
 					strcpyUntilPlaceInMem(tempStr, problem, problem + i);
 					problem = insertVALUEintoSTRinsteadOfPTR1toPTR2(factorial(atoi(tempStr)), problem, problem, problem + i);
-					printf("%s\n", problem);
 					i = 0;
 					break;
 				}
@@ -158,7 +166,6 @@ double solveMath(char *problem) //Returns the number the expression problem is e
 					strcpyUntilPlaceInMem(tempStr, problem + j + 1, problem + i);
 					problem = insertVALUEintoSTRinsteadOfPTR1toPTR2(factorial(atoi(tempStr)), problem, problem + j + 1, problem + i);
 					i = 0;
-					printf("%s\n", problem);
 					break;
 				}
 	}
@@ -191,7 +198,6 @@ double solveMath(char *problem) //Returns the number the expression problem is e
 			else
 				problem = insertVALUEintoSTRinsteadOfPTR1toPTR2(pow(tempNum1, tempNum2), problem, problem, problem + k - 1);
 			i = *problem == '-' ? 0 : -1;
-			printf("%s\n", problem);
 		}
 	//Calculating multiplication and division.
 	for (i = *problem == '-' ? 1 : 0; i < strlen(problem); i++)
@@ -222,7 +228,6 @@ double solveMath(char *problem) //Returns the number the expression problem is e
 			else
 				problem = problem[i] == '*' ? insertVALUEintoSTRinsteadOfPTR1toPTR2(tempNum1 * tempNum2, problem, problem, problem + k - 1) : insertVALUEintoSTRinsteadOfPTR1toPTR2(tempNum1 / tempNum2, problem, problem, problem + k - 1);
 			i = *problem == '-' ? 0 : -1;
-			printf("%s\n", problem);
 		}
 	//Calculating addition and subtraction.
 	for (i = *problem == '-' ? 1 : 0; i < strlen(problem); i++)
@@ -262,7 +267,6 @@ double solveMath(char *problem) //Returns the number the expression problem is e
 					problem = insertVALUEintoSTRinsteadOfPTR1toPTR2(tempNum1 - tempNum2, problem, problem, problem + k - 1);
 			}
 			i = *problem == '-' ? 0 : -1;
-			printf("%s\n", problem);
 		}
 	tempNum1 = atof(problem);
 	free(problem);
@@ -335,7 +339,7 @@ void lowerCase(char *str) //Converts every char to lower case.
 char* modifyAndCheckForErrors(char *expression) //Returns a given string so it will solvable. Unless it has illegal math operations in it.
 {
 	lowerCase(expression);
-	expression = changeLettersToActualValue(fixAsterisks(deleteIllegalChars(expression)));
+	expression = changeLettersToActualValue(fixAsterisks(fixAndDeleteIllegalChars(expression)));
 	checkIllegalMath(expression);
 	return expression;
 }
