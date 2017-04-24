@@ -82,7 +82,7 @@ void checkIllegalMath(char *str) //Prints an error message and exits the program
 			free(str);
 			exit(1);
 		}
-		if ((str[i] == '+' || str[i] == '-' || str[i] == '*' || str[i] == '^' || str[i] == '/') && (str[i + 1] == '+' || str[i + 1] == '*' || str[i + 1] == '^' || str[i + 1] == '!' || str[i + 1] == '/'))
+		if (((str[i] == '+' || str[i] == '-' || str[i] == '*' || str[i] == '^' || str[i] == '/') && (str[i + 1] == '+' || str[i + 1] == '*' || str[i + 1] == '^' || str[i + 1] == '!' || str[i + 1] == '/')) || (str[i] == '-' && str[i + 1] == '-'))
 		{
 			printf("ERROR: CONSECUTIVE OPERATORS.\n");
 			free(str);
