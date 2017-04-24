@@ -19,14 +19,15 @@ char* insertAsteriskAfter(char *str, char *ptr);
 void lowerCase(char *str);
 char* modifyAndCheckForErrors(char *expression);
 double solveExpression(char *expression);
-void main()
+int main()
 {
 	char *userInput = (char *)calloc(USER_INPUT_SIZE, sizeof(char));
 	checkForAllocationFailure(userInput);
 	printf("Welcome to Yarden's calculator! Enter a mathematical expression to get its result.\n*To enter the number Pi use 'p'.\n> ");
-	gets_s(userInput, USER_INPUT_SIZE);
+	fgets(userInput, USER_INPUT_SIZE, stdin);
 	userInput = modifyAndCheckForErrors(userInput);
 	printf("The answer is %.2f.\n", solveExpression(userInput));
+	return 0;
 }
 double factorial(int number) //Returns the factorial of a given number.
 {
@@ -186,7 +187,7 @@ double solveMath(char *problem) //Returns the number the expression problem is e
 					tempNum1 = atof(tempStr);
 					break;
 				}
-			for (k = i + 1; k < strlen(problem) + 1; k++)
+			for (k = problem[i + 1] == '-' ? i + 2 : i + 1; k < strlen(problem) + 1; k++)
 				if (!isdigit(problem[k]) && problem[k] != '.')
 				{
 					strcpyUntilPlaceInMem(tempStr, problem + i + 1, problem + k);
@@ -216,7 +217,7 @@ double solveMath(char *problem) //Returns the number the expression problem is e
 					tempNum1 = atof(tempStr);
 					break;
 				}
-			for (k = i + 1; k < strlen(problem) + 1; k++)
+			for (k = problem[i + 1] == '-' ? i + 2 : i + 1; k < strlen(problem) + 1; k++)
 				if (!isdigit(problem[k]) && problem[k] != '.')
 				{
 					strcpyUntilPlaceInMem(tempStr, problem + i + 1, problem + k);
