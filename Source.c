@@ -49,6 +49,7 @@ char* deleteIllegalChars(char* str) //Returns a given string with illegal mathem
 }
 void checkIllegalMath(char *str) //Prints an error message and exits the program if there are illegal math operations in str.
 {
+	//TODO - check ().
 	unsigned int i, j;
 	int parentheses = 0;
 	if (strlen(str) == 1)
@@ -343,16 +344,16 @@ double solveExpression(char *expression) //Returns the number the expression pro
 	unsigned i, j;
 	char *tempStr;
 	//Simplify all parentheses.
-	for (i = 0; i <= strlen(expression); i++)
-		if (expression[i] == '(')
-			for (j = i + 1; 1; j++)
-				if (expression[j] == ')')
+	for (i = 1; i < strlen(expression); i++)
+		if (expression[i] == ')')
+			for (j = i - 1; 1; j--)
+				if (expression[j] == '(')
 				{
 					tempStr = (char *)calloc(strlen(expression) + 1, sizeof(char));
 					checkForAllocationFailure(tempStr);
-					strcpyUntilPlaceInMem(tempStr, expression + i + 1, expression + j);
-					expression = insertVALUEintoSTRinsteadOfPTR1toPTR2(solveMath(tempStr), expression, expression + i, expression + j);
-					i = -1;
+					strcpyUntilPlaceInMem(tempStr, expression + j + 1, expression + i);
+					expression = insertVALUEintoSTRinsteadOfPTR1toPTR2(solveMath(tempStr), expression, expression + j, expression + i);
+					i = 0;
 					break;
 				}
 	//Calculate final value.
