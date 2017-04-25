@@ -379,8 +379,7 @@ char* modifyAndCheckForErrors(char *expression, bool showChanges) //Returns a gi
 double solveExpression(char *expression, bool showCalculations) //Returns the number the expression problem is equal to.
 {
 	unsigned i, j;
-	char *tempStr, initialString[USER_INPUT_SIZE];
-	strcpy(initialString, expression);
+	char *tempStr;
 	//Simplify all parentheses.
 	for (i = 1; i < strlen(expression); i++)
 		if (expression[i] == ')')
@@ -396,7 +395,6 @@ double solveExpression(char *expression, bool showCalculations) //Returns the nu
 					i = 0;
 					break;
 				}
-	if (showCalculations && strcmp(initialString, expression)) printf("%s\n", expression);
 	//Calculate final value.
 	return solveMath(expression, showCalculations);
 }
