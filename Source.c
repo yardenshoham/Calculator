@@ -6,28 +6,43 @@
 #include <ctype.h>
 #include <stdlib.h>
 #include <string.h>
+#include <stdbool.h>
 double factorial(int number);
-char* fixAndDeleteIllegalChars(char* str);
+char* fixAndDeleteIllegalChars(char* str, bool showChanges);
 void checkIllegalMath(char *str);
 void checkForAllocationFailure(char *ptr);
-double solveMath(char *problem);
+double solveMath(char *problem, bool showCalculations);
 char* insertVALUEintoSTRinsteadOfPTR1toPTR2(double value, char *str, char *ptr1, char *ptr2);
 void strcpyUntilPlaceInMem(char *dest, char *source, char *place);
-char* changeLettersToActualValue(char *str);
-char* fixAsterisks(char *str);
+char* changeLettersToActualValue(char *str, bool showChanges);
+char* fixAsterisks(char *str, bool showChanges);
 char* insertAsteriskAfter(char *str, char *ptr);
-void lowerCase(char *str);
-char* modifyAndCheckForErrors(char *expression);
-double solveExpression(char *expression);
+void lowerCase(char *str, bool showChanges);
+char* modifyAndCheckForErrors(char *expression, bool showChanges);
+double solveExpression(char *expression, bool showCalculations);
+void myInputBuffFlush(void);
 int main()
 {
 	char *userInput = (char *)calloc(USER_INPUT_SIZE, sizeof(char));
+	bool showWork;
+	char userChar;
 	checkForAllocationFailure(userInput);
 	printf("Welcome to Yarden's calculator! Enter a mathematical expression to get its result.\n*To enter the number Pi use 'p'.\n> ");
 	fgets(userInput, USER_INPUT_SIZE, stdin);
-	userInput = modifyAndCheckForErrors(userInput);
-	printf("The answer is %.2f.\n", solveExpression(userInput));
-	return 0;
+	myInputBuffFlush();
+	printf("Would you like the program to show you how it works? Enter Y or N.\n> ");
+	userChar = toupper(getchar());
+	myInputBuffFlush();
+	while (userChar != 'Y' && userChar != 'N')
+	{
+		printf("Invalid input, try again.\n> ");
+		userChar = toupper(getchar());
+		myInputBuffFlush();
+	}
+	showWork = userChar == 'Y' ? true : false;
+	userInput = modifyAndCheckForErrors(userInput, showWork);
+	printf("The answer is %.2f.\n", solveExpression(userInput, showWork));
+	return EXIT_SUCCESS;
 }
 double factorial(int number) //Returns the factorial of a given number.
 {
@@ -35,7 +50,7 @@ double factorial(int number) //Returns the factorial of a given number.
 	for (; number > 1; number--) result *= number;
 	return result;
 }
-char* fixAndDeleteIllegalChars(char* str) //Returns a given string with illegal mathematical characters removed and fixes weird parentheses.
+char* fixAndDeleteIllegalChars(char* str, bool showChanges) //Returns a given string with illegal mathematical characters removed and fixes weird parentheses.
 {
 	char *result = (char *)calloc(strlen(str) + 1, sizeof(char));
 	unsigned int i, j;
@@ -47,6 +62,7 @@ char* fixAndDeleteIllegalChars(char* str) //Returns a given string with illegal 
 			result[j++] = '(';
 		else if (str[i] == ']' || str[i] == '}')
 			result[j++] = ')';
+	if (showChanges && strcmp(result, str)) printf("%s\n", result);
 	free(str);
 	result = (char *)realloc(result, ++j * sizeof(char));
 	checkForAllocationFailure(result);
@@ -146,7 +162,7 @@ void checkForAllocationFailure(char *ptr) //Exits from the program if ptr == NUL
 		exit(1);
 	}
 }
-double solveMath(char *problem) //Returns the number the expression problem is equal to. Can't handle parentheses.
+double solveMath(char *problem, bool showCalculations) //Returns the number the expression problem is equal to. Can't handle parentheses.
 {
 	unsigned int i, j, k;
 	char *tempStr = (char *)calloc(15 * strlen(problem), sizeof(char));
@@ -160,6 +176,7 @@ double solveMath(char *problem) //Returns the number the expression problem is e
 				{
 					strcpyUntilPlaceInMem(tempStr, problem, problem + i);
 					problem = insertVALUEintoSTRinsteadOfPTR1toPTR2(factorial(atoi(tempStr)), problem, problem, problem + i);
+					if (showCalculations) printf("%s\n", problem);
 					i = 0;
 					break;
 				}
@@ -167,6 +184,7 @@ double solveMath(char *problem) //Returns the number the expression problem is e
 				{
 					strcpyUntilPlaceInMem(tempStr, problem + j + 1, problem + i);
 					problem = insertVALUEintoSTRinsteadOfPTR1toPTR2(factorial(atoi(tempStr)), problem, problem + j + 1, problem + i);
+					if (showCalculations) printf("%s\n", problem);
 					i = 0;
 					break;
 				}
@@ -199,6 +217,7 @@ double solveMath(char *problem) //Returns the number the expression problem is e
 				problem = insertVALUEintoSTRinsteadOfPTR1toPTR2(pow(tempNum1, tempNum2), problem, problem + j + 1, problem + k - 1);
 			else
 				problem = insertVALUEintoSTRinsteadOfPTR1toPTR2(pow(tempNum1, tempNum2), problem, problem, problem + k - 1);
+			if (showCalculations) printf("%s\n", problem);
 			i = *problem == '-' ? 0 : -1;
 		}
 	//Calculating multiplication and division.
@@ -229,6 +248,7 @@ double solveMath(char *problem) //Returns the number the expression problem is e
 				problem = problem[i] == '*' ? insertVALUEintoSTRinsteadOfPTR1toPTR2(tempNum1 * tempNum2, problem, problem + j + 1, problem + k - 1) : insertVALUEintoSTRinsteadOfPTR1toPTR2(tempNum1 / tempNum2, problem, problem + j + 1, problem + k - 1);
 			else
 				problem = problem[i] == '*' ? insertVALUEintoSTRinsteadOfPTR1toPTR2(tempNum1 * tempNum2, problem, problem, problem + k - 1) : insertVALUEintoSTRinsteadOfPTR1toPTR2(tempNum1 / tempNum2, problem, problem, problem + k - 1);
+			if (showCalculations) printf("%s\n", problem);
 			i = *problem == '-' ? 0 : -1;
 		}
 	//Calculating addition and subtraction.
@@ -268,6 +288,7 @@ double solveMath(char *problem) //Returns the number the expression problem is e
 				else
 					problem = insertVALUEintoSTRinsteadOfPTR1toPTR2(tempNum1 - tempNum2, problem, problem, problem + k - 1);
 			}
+			if (showCalculations) printf("%s\n", problem);
 			i = *problem == '-' ? 0 : -1;
 		}
 	tempNum1 = atof(problem);
@@ -291,7 +312,7 @@ char* insertVALUEintoSTRinsteadOfPTR1toPTR2(double value, char *str, char *ptr1,
 		strcpy(part2, ptr2 + 1);
 	else
 		strcpy(part2, "\0");
-	sprintf(result, "%s%.10f%s", part1, value, part2);
+	sprintf(result, "%s%f%s", part1, value, part2);
 	free(part1);
 	free(part2);
 	free(str);
@@ -299,8 +320,10 @@ char* insertVALUEintoSTRinsteadOfPTR1toPTR2(double value, char *str, char *ptr1,
 	checkForAllocationFailure(result);
 	return result;
 }
-char* fixAsterisks(char *str) //Adds '*' to a given string in appropriate places.
+char* fixAsterisks(char *str, bool showChanges) //Adds '*' to a given string in appropriate places.
 {
+	char initialString[USER_INPUT_SIZE];
+	strcpy(initialString, str);
 	unsigned int i;
 	for (i = 0; i < strlen(str); i++)
 		if (((str[i] == 'e' || str[i] == 'p') && (isdigit(str[i + 1]) || str[i + 1] == 'e' || str[i + 1] == 'p' || str[i + 1] == '(')) || (isdigit(str[i]) && str[i + 1] == '('))
@@ -308,6 +331,7 @@ char* fixAsterisks(char *str) //Adds '*' to a given string in appropriate places
 	for (i = 1; i < strlen(str); i++)
 		if (((str[i] == 'e' || str[i] == 'p') && (isdigit(str[i - 1]) || str[i - 1] == 'e' || str[i - 1] == 'p' || str[i - 1] == ')')) || (str[i - 1] == ')' && isdigit(str[i])))
 			str = insertAsteriskAfter(str, str + i - 1);
+	if (showChanges && strcmp(initialString, str)) printf("%s\n", str);
 	return str;
 }
 char* insertAsteriskAfter(char *str, char *ptr) //Returns a given string with '*' inserted immediately after ptr. 
@@ -326,29 +350,37 @@ char* insertAsteriskAfter(char *str, char *ptr) //Returns a given string with '*
 	checkForAllocationFailure(result);
 	return result;
 }
-char* changeLettersToActualValue(char *str) //Returns a pointer to a given string with 'p' as "3.14159265359" and 'e' as "2.71828182845".
+char* changeLettersToActualValue(char *str, bool showChanges) //Returns a pointer to a given string with 'p' as "3.14159265359" and 'e' as "2.71828182845".
 {
 	unsigned int i;
-	for (i = 0; i < strlen(str); i++)
+	char initialString[USER_INPUT_SIZE];
+	strcpy(initialString, str);
+	for (i = 0; i < strlen(str); i++) {
 		if (str[i] == 'p') str = insertVALUEintoSTRinsteadOfPTR1toPTR2(3.14159265359, str, str + i, str + i);
 		else if (str[i] == 'e') str = insertVALUEintoSTRinsteadOfPTR1toPTR2(2.718281828, str, str + i, str + i);
+	}
+	if (showChanges && strcmp(initialString, str)) printf("%s\n", str);
 	return str;
 }
-void lowerCase(char *str) //Converts every char to lower case.
+void lowerCase(char *str, bool showChanges) //Converts every char to lower case.
 {
-	for (; *str; str++) *str = tolower(*str);
+	char initialString[USER_INPUT_SIZE], *initialStringPointer = str;
+	strcpy(initialString, str);
+	for (; *initialStringPointer; initialStringPointer++) *initialStringPointer = tolower(*initialStringPointer);
+	if (showChanges && strcmp(initialString, str)) printf("%s\n", str);
 }
-char* modifyAndCheckForErrors(char *expression) //Returns a given string so it will solvable. Unless it has illegal math operations in it.
+char* modifyAndCheckForErrors(char *expression, bool showChanges) //Returns a given string so it will solvable. Unless it has illegal math operations in it.
 {
-	lowerCase(expression);
-	expression = changeLettersToActualValue(fixAsterisks(fixAndDeleteIllegalChars(expression)));
+	lowerCase(expression, showChanges);
+	expression = changeLettersToActualValue(fixAsterisks(fixAndDeleteIllegalChars(expression, showChanges), showChanges), showChanges);
 	checkIllegalMath(expression);
 	return expression;
 }
-double solveExpression(char *expression) //Returns the number the expression problem is equal to.
+double solveExpression(char *expression, bool showCalculations) //Returns the number the expression problem is equal to.
 {
 	unsigned i, j;
-	char *tempStr;
+	char *tempStr, initialString[USER_INPUT_SIZE];
+	strcpy(initialString, expression);
 	//Simplify all parentheses.
 	for (i = 1; i < strlen(expression); i++)
 		if (expression[i] == ')')
@@ -358,10 +390,22 @@ double solveExpression(char *expression) //Returns the number the expression pro
 					tempStr = (char *)calloc(strlen(expression) + 1, sizeof(char));
 					checkForAllocationFailure(tempStr);
 					strcpyUntilPlaceInMem(tempStr, expression + j + 1, expression + i);
-					expression = insertVALUEintoSTRinsteadOfPTR1toPTR2(solveMath(tempStr), expression, expression + j, expression + i);
+					if (showCalculations) printf("-------------\n%s\n", tempStr);
+					expression = insertVALUEintoSTRinsteadOfPTR1toPTR2(solveMath(tempStr, showCalculations), expression, expression + j, expression + i);
+					if (showCalculations) printf("-------------\n%s\n", expression);
 					i = 0;
 					break;
 				}
+	if (showCalculations && strcmp(initialString, expression)) printf("%s\n", expression);
 	//Calculate final value.
-	return solveMath(expression);
+	return solveMath(expression, showCalculations);
+}
+void myInputBuffFlush(void) //Cleans the buffer.
+{
+	int i, size, ch;
+	fseek(stdin, 0, SEEK_END);
+	size = ftell(stdin);
+	rewind(stdin);
+	for (i = 0; i < size; i++)
+		ch = getchar();
 }
