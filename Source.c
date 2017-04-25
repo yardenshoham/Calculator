@@ -7,6 +7,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdbool.h>
+unsigned tabs;
 double factorial(int number);
 char* fixAndDeleteIllegalChars(char* str, bool showChanges);
 void checkIllegalMath(char *str);
@@ -20,6 +21,7 @@ char* insertAsteriskAfter(char *str, char *ptr);
 void lowerCase(char *str, bool showChanges);
 char* modifyAndCheckForErrors(char *expression, bool showChanges);
 double solveExpression(char *expression, bool showCalculations);
+void printBeautifully(char *s, unsigned tabs);
 void myInputBuffFlush(void);
 int main()
 {
@@ -165,6 +167,7 @@ void checkForAllocationFailure(char *ptr) //Exits from the program if ptr == NUL
 double solveMath(char *problem, bool showCalculations) //Returns the number the expression problem is equal to. Can't handle parentheses.
 {
 	unsigned int i, j, k;
+	extern unsigned tabs;
 	char *tempStr = (char *)calloc(15 * strlen(problem), sizeof(char));
 	double tempNum1, tempNum2;
 	checkForAllocationFailure(tempStr);
@@ -176,7 +179,7 @@ double solveMath(char *problem, bool showCalculations) //Returns the number the 
 				{
 					strcpyUntilPlaceInMem(tempStr, problem, problem + i);
 					problem = insertVALUEintoSTRinsteadOfPTR1toPTR2(factorial(atoi(tempStr)), problem, problem, problem + i);
-					if (showCalculations) printf("%s\n", problem);
+					if (showCalculations) printBeautifully(problem, tabs);
 					i = 0;
 					break;
 				}
@@ -184,7 +187,7 @@ double solveMath(char *problem, bool showCalculations) //Returns the number the 
 				{
 					strcpyUntilPlaceInMem(tempStr, problem + j + 1, problem + i);
 					problem = insertVALUEintoSTRinsteadOfPTR1toPTR2(factorial(atoi(tempStr)), problem, problem + j + 1, problem + i);
-					if (showCalculations) printf("%s\n", problem);
+					if (showCalculations) printBeautifully(problem, tabs);
 					i = 0;
 					break;
 				}
@@ -217,7 +220,7 @@ double solveMath(char *problem, bool showCalculations) //Returns the number the 
 				problem = insertVALUEintoSTRinsteadOfPTR1toPTR2(pow(tempNum1, tempNum2), problem, problem + j + 1, problem + k - 1);
 			else
 				problem = insertVALUEintoSTRinsteadOfPTR1toPTR2(pow(tempNum1, tempNum2), problem, problem, problem + k - 1);
-			if (showCalculations) printf("%s\n", problem);
+			if (showCalculations) printBeautifully(problem, tabs);
 			i = *problem == '-' ? 0 : -1;
 		}
 	//Calculating multiplication and division.
@@ -248,7 +251,7 @@ double solveMath(char *problem, bool showCalculations) //Returns the number the 
 				problem = problem[i] == '*' ? insertVALUEintoSTRinsteadOfPTR1toPTR2(tempNum1 * tempNum2, problem, problem + j + 1, problem + k - 1) : insertVALUEintoSTRinsteadOfPTR1toPTR2(tempNum1 / tempNum2, problem, problem + j + 1, problem + k - 1);
 			else
 				problem = problem[i] == '*' ? insertVALUEintoSTRinsteadOfPTR1toPTR2(tempNum1 * tempNum2, problem, problem, problem + k - 1) : insertVALUEintoSTRinsteadOfPTR1toPTR2(tempNum1 / tempNum2, problem, problem, problem + k - 1);
-			if (showCalculations) printf("%s\n", problem);
+			if (showCalculations) printBeautifully(problem, tabs);
 			i = *problem == '-' ? 0 : -1;
 		}
 	//Calculating addition and subtraction.
@@ -288,7 +291,7 @@ double solveMath(char *problem, bool showCalculations) //Returns the number the 
 				else
 					problem = insertVALUEintoSTRinsteadOfPTR1toPTR2(tempNum1 - tempNum2, problem, problem, problem + k - 1);
 			}
-			if (showCalculations) printf("%s\n", problem);
+			if (showCalculations) printBeautifully(problem, tabs);
 			i = *problem == '-' ? 0 : -1;
 		}
 	tempNum1 = atof(problem);
@@ -379,7 +382,9 @@ char* modifyAndCheckForErrors(char *expression, bool showChanges) //Returns a gi
 double solveExpression(char *expression, bool showCalculations) //Returns the number the expression problem is equal to.
 {
 	unsigned i, j;
+	extern unsigned tabs;
 	char *tempStr;
+	tabs = 1;
 	//Simplify all parentheses.
 	for (i = 1; i < strlen(expression); i++)
 		if (expression[i] == ')')
@@ -389,14 +394,21 @@ double solveExpression(char *expression, bool showCalculations) //Returns the nu
 					tempStr = (char *)calloc(strlen(expression) + 1, sizeof(char));
 					checkForAllocationFailure(tempStr);
 					strcpyUntilPlaceInMem(tempStr, expression + j + 1, expression + i);
-					if (showCalculations) printf("-------------\n%s\n", tempStr);
+					if (showCalculations) printBeautifully(tempStr, tabs);
 					expression = insertVALUEintoSTRinsteadOfPTR1toPTR2(solveMath(tempStr, showCalculations), expression, expression + j, expression + i);
-					if (showCalculations) printf("-------------\n%s\n", expression);
+					if (showCalculations) printf("%s\n", expression);
 					i = 0;
 					break;
 				}
+	tabs = 0;
 	//Calculate final value.
 	return solveMath(expression, showCalculations);
+}
+void printBeautifully(char *s, unsigned tabs)
+{
+	unsigned i;
+	for (i = 0; i < tabs; i++) putchar('\t');
+	printf("%s\n", s);
 }
 void myInputBuffFlush(void) //Cleans the buffer.
 {
