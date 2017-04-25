@@ -7,12 +7,11 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdbool.h>
-unsigned spaces;
 double factorial(int number);
 char* fixAndDeleteIllegalChars(char* str, bool showChanges);
 void checkIllegalMath(char *str);
 void checkForAllocationFailure(char *ptr);
-double solveMath(char *problem, bool showCalculations);
+double solveMath(char *problem, bool showCalculations, unsigned spaces);
 char* insertVALUEintoSTRinsteadOfPTR1toPTR2(double value, char *str, char *ptr1, char *ptr2);
 void strcpyUntilPlaceInMem(char *dest, char *source, char *place);
 char* changeLettersToActualValue(char *str, bool showChanges);
@@ -64,7 +63,7 @@ char* fixAndDeleteIllegalChars(char* str, bool showChanges) //Returns a given st
 			result[j++] = '(';
 		else if (str[i] == ']' || str[i] == '}')
 			result[j++] = ')';
-	if (showChanges && strcmp(result, str)) printf("%s\n", result);
+	if (showChanges && strcmp(result, str)) printBeautifully(result, 0);
 	free(str);
 	result = (char *)realloc(result, ++j * sizeof(char));
 	checkForAllocationFailure(result);
@@ -164,10 +163,9 @@ void checkForAllocationFailure(char *ptr) //Exits from the program if ptr == NUL
 		exit(1);
 	}
 }
-double solveMath(char *problem, bool showCalculations) //Returns the number the expression problem is equal to. Can't handle parentheses.
+double solveMath(char *problem, bool showCalculations, unsigned spaces) //Returns the number the expression problem is equal to. Can't handle parentheses.
 {
 	unsigned int i, j, k;
-	extern unsigned spaces;
 	char *tempStr = (char *)calloc(15 * strlen(problem), sizeof(char));
 	double tempNum1, tempNum2;
 	checkForAllocationFailure(tempStr);
@@ -315,7 +313,7 @@ char* insertVALUEintoSTRinsteadOfPTR1toPTR2(double value, char *str, char *ptr1,
 		strcpy(part2, ptr2 + 1);
 	else
 		strcpy(part2, "\0");
-	sprintf(result, "%s%f%s", part1, value, part2);
+	sprintf(result, "%s%.12f%s", part1, value, part2);
 	free(part1);
 	free(part2);
 	free(str);
@@ -334,7 +332,7 @@ char* fixAsterisks(char *str, bool showChanges) //Adds '*' to a given string in 
 	for (i = 1; i < strlen(str); i++)
 		if (((str[i] == 'e' || str[i] == 'p') && (isdigit(str[i - 1]) || str[i - 1] == 'e' || str[i - 1] == 'p' || str[i - 1] == ')')) || (str[i - 1] == ')' && isdigit(str[i])))
 			str = insertAsteriskAfter(str, str + i - 1);
-	if (showChanges && strcmp(initialString, str)) printf("%s\n", str);
+	if (showChanges && strcmp(initialString, str)) printBeautifully(str, 0);
 	return str;
 }
 char* insertAsteriskAfter(char *str, char *ptr) //Returns a given string with '*' inserted immediately after ptr. 
@@ -362,7 +360,7 @@ char* changeLettersToActualValue(char *str, bool showChanges) //Returns a pointe
 		if (str[i] == 'p') str = insertVALUEintoSTRinsteadOfPTR1toPTR2(3.14159265359, str, str + i, str + i);
 		else if (str[i] == 'e') str = insertVALUEintoSTRinsteadOfPTR1toPTR2(2.718281828, str, str + i, str + i);
 	}
-	if (showChanges && strcmp(initialString, str)) printf("%s\n", str);
+	if (showChanges && strcmp(initialString, str)) printBeautifully(str, 0);
 	return str;
 }
 void lowerCase(char *str, bool showChanges) //Converts every char to lower case.
@@ -370,7 +368,7 @@ void lowerCase(char *str, bool showChanges) //Converts every char to lower case.
 	char initialString[USER_INPUT_SIZE], *initialStringPointer = str;
 	strcpy(initialString, str);
 	for (; *initialStringPointer; initialStringPointer++) *initialStringPointer = tolower(*initialStringPointer);
-	if (showChanges && strcmp(initialString, str)) printf("%s\n", str);
+	if (showChanges && strcmp(initialString, str)) printBeautifully(str, 0);
 }
 char* modifyAndCheckForErrors(char *expression, bool showChanges) //Returns a given string so it will solvable. Unless it has illegal math operations in it.
 {
@@ -382,7 +380,6 @@ char* modifyAndCheckForErrors(char *expression, bool showChanges) //Returns a gi
 double solveExpression(char *expression, bool showCalculations) //Returns the number the expression problem is equal to.
 {
 	unsigned i, j;
-	extern unsigned spaces;
 	char *tempStr;
 	//Simplify all parentheses.
 	for (i = 1; i < strlen(expression); i++)
@@ -392,23 +389,47 @@ double solveExpression(char *expression, bool showCalculations) //Returns the nu
 				{
 					tempStr = (char *)calloc(strlen(expression) + 1, sizeof(char));
 					checkForAllocationFailure(tempStr);
-					spaces = j + 1;
 					strcpyUntilPlaceInMem(tempStr, expression + j + 1, expression + i);
-					if (showCalculations) printBeautifully(tempStr, spaces);
-					expression = insertVALUEintoSTRinsteadOfPTR1toPTR2(solveMath(tempStr, showCalculations), expression, expression + j, expression + i);
-					if (showCalculations) printf("%s\n", expression);
-					i = 0;
+					if (showCalculations) printBeautifully(tempStr, 4);
+					expression = insertVALUEintoSTRinsteadOfPTR1toPTR2(solveMath(tempStr, showCalculations, 4), expression, expression + j, expression + i);
+					if (showCalculations) printBeautifully(expression, 0);
+					i = 1;
 					break;
 				}
-	spaces = 0;
 	//Calculate final value.
-	return solveMath(expression, showCalculations);
+	return solveMath(expression, showCalculations, 0);
 }
 void printBeautifully(char *s, unsigned spaces)
 {
-	unsigned i;
+	unsigned i, j, point;
+	char tempNum[USER_INPUT_SIZE];
 	for (i = 0; i < spaces; i++) putchar(' ');
-	printf("%s\n", s);
+	for (i = 0; s[i]; i++)
+	{
+		if (isdigit(s[i]))
+		{
+			for (j = i + 1; j <= strlen(s); j++)
+				if (!isdigit(s[j]) && s[j] != '.')
+				{
+					strcpyUntilPlaceInMem(tempNum, s + i, s + j);
+					break;
+				}
+			i = j - 1;
+			if (fmod(atof(tempNum), 1.0)) //If floating point number.
+			{
+				for (j = strlen(tempNum) - 1; tempNum[j] == '0'; j--);
+				tempNum[j + 1] = '\0';
+				for (point = 1; tempNum[point] != '.'; point++);
+				if (strlen(tempNum + point + 1) == 1) printf(tempNum);
+				else printf("%.2f", atof(tempNum));
+			}
+			else //If integer.
+				printf("%d", atoi(tempNum));
+		}
+		else
+			putchar(s[i]);
+	}
+	putchar('\n');
 }
 void myInputBuffFlush(void) //Cleans the buffer.
 {
