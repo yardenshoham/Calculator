@@ -20,7 +20,7 @@ char* insertAsteriskAfter(char *str, char *ptr);
 void lowerCase(char *str, bool showChanges);
 char* modifyAndCheckForErrors(char *expression, bool showChanges);
 double solveExpression(char *expression, bool showCalculations);
-void printBeautifully(char *s, unsigned spaces);
+unsigned printBeautifully(char *s, unsigned spaces);
 void myInputBuffFlush(void);
 int main()
 {
@@ -114,39 +114,39 @@ void checkIllegalMath(char *str) //Prints an error message and exits the program
 					exit(1);
 				}
 				else if (str[j] == '+' || str[j] == '-' || str[j] == '*' || str[j] == '^' || str[j] == '/' || str[j] == '(' || str[j] == ')') break;
-		if (str[i] == '(') parentheses++;
-		if (str[i] == ')') parentheses--;
-		if (str[i] == '.')
-		{
-			if (i >= 1)
-				if (!isdigit(str[i - 1]))
+				if (str[i] == '(') parentheses++;
+				if (str[i] == ')') parentheses--;
+				if (str[i] == '.')
 				{
-					printf("ERROR: MISPLACED DECIMAL POINT.\n");
-					free(str);
-					exit(1);
+					if (i >= 1)
+						if (!isdigit(str[i - 1]))
+						{
+							printf("ERROR: MISPLACED DECIMAL POINT.\n");
+							free(str);
+							exit(1);
+						}
+					if (!isdigit(str[i + 1]))
+					{
+						printf("ERROR: MISPLACED DECIMAL POINT.\n");
+						free(str);
+						exit(1);
+					}
+					for (j = i + 1; j < strlen(str); j++)
+						if (str[j] == '.')
+						{
+							printf("ERROR: MISPLACED DECIMAL POINT.\n");
+							free(str);
+							exit(1);
+						}
+						else if (str[j] == '!')
+						{
+							printf("ERROR: DECIMAL POINT BEFORE FACTORIAL.\n");
+							free(str);
+							exit(1);
+						}
+						else if (str[j] == '+' || str[j] == '-' || str[j] == '*' || str[j] == '^' || str[j] == '/' || str[j] == '(' || str[j] == ')')
+							break;
 				}
-			if (!isdigit(str[i + 1]))
-			{
-				printf("ERROR: MISPLACED DECIMAL POINT.\n");
-				free(str);
-				exit(1);
-			}
-			for (j = i + 1; j < strlen(str); j++)
-				if (str[j] == '.')
-				{
-					printf("ERROR: MISPLACED DECIMAL POINT.\n");
-					free(str);
-					exit(1);
-				}
-				else if (str[j] == '!')
-				{
-					printf("ERROR: DECIMAL POINT BEFORE FACTORIAL.\n");
-					free(str);
-					exit(1);
-				}
-					else if (str[j] == '+' || str[j] == '-' || str[j] == '*' || str[j] == '^' || str[j] == '/' || str[j] == '(' || str[j] == ')')
-						break;
-		}
 	}
 	if (parentheses)
 	{
@@ -379,7 +379,7 @@ char* modifyAndCheckForErrors(char *expression, bool showChanges) //Returns a gi
 }
 double solveExpression(char *expression, bool showCalculations) //Returns the number the expression problem is equal to.
 {
-	unsigned i, j;
+	unsigned i, j, spaces;
 	char *tempStr;
 	//Simplify all parentheses.
 	for (i = 1; i < strlen(expression); i++)
@@ -390,8 +390,8 @@ double solveExpression(char *expression, bool showCalculations) //Returns the nu
 					tempStr = (char *)calloc(strlen(expression) + 1, sizeof(char));
 					checkForAllocationFailure(tempStr);
 					strcpyUntilPlaceInMem(tempStr, expression + j + 1, expression + i);
-					if (showCalculations) printBeautifully(tempStr, 4);
-					expression = insertVALUEintoSTRinsteadOfPTR1toPTR2(solveMath(tempStr, showCalculations, 4), expression, expression + j, expression + i);
+					if (showCalculations) spaces = printBeautifully(expression, USER_INPUT_SIZE);
+					expression = insertVALUEintoSTRinsteadOfPTR1toPTR2(solveMath(tempStr, showCalculations, spaces), expression, expression + j, expression + i);
 					if (showCalculations) printBeautifully(expression, 0);
 					i = 1;
 					break;
@@ -399,11 +399,11 @@ double solveExpression(char *expression, bool showCalculations) //Returns the nu
 	//Calculate final value.
 	return solveMath(expression, showCalculations, 0);
 }
-void printBeautifully(char *s, unsigned spaces)
+unsigned printBeautifully(char *s, unsigned spaces)
 {
-	unsigned i, j, point;
-	char tempNum[USER_INPUT_SIZE];
-	for (i = 0; i < spaces; i++) putchar(' ');
+	unsigned i, j, point, printIndex = 0;
+	char tempNum[USER_INPUT_SIZE], stringToPrint[USER_INPUT_SIZE] = { 0 };
+	if (spaces != USER_INPUT_SIZE) for (i = 0; i < spaces; i++) putchar(' ');
 	for (i = 0; s[i]; i++)
 	{
 		if (isdigit(s[i]))
@@ -420,16 +420,30 @@ void printBeautifully(char *s, unsigned spaces)
 				for (j = strlen(tempNum) - 1; tempNum[j] == '0'; j--);
 				tempNum[j + 1] = '\0';
 				for (point = 1; tempNum[point] != '.'; point++);
-				if (strlen(tempNum + point + 1) == 1) printf(tempNum);
-				else printf("%.2f", atof(tempNum));
+				if (strlen(tempNum + point + 1) == 1) sprintf(stringToPrint + printIndex, tempNum);
+				else sprintf(stringToPrint + printIndex, "%.2f", atof(tempNum));
 			}
 			else //If integer.
-				printf("%d", atoi(tempNum));
+				sprintf(stringToPrint + printIndex, "%d", atoi(tempNum));
+			printIndex = strlen(stringToPrint);
 		}
 		else
-			putchar(s[i]);
+		{
+			sprintf(stringToPrint + printIndex, "%c", s[i]);
+			printIndex++;
+		}
 	}
-	putchar('\n');
+	if (spaces != USER_INPUT_SIZE)
+	{
+		printf(stringToPrint);
+		putchar('\n');
+	}
+	for (i = 1; i < printIndex; i++)
+		if (stringToPrint[i] == ')')
+			for (; ; i--)
+				if (stringToPrint[i] == '(')
+					return (i + 1);
+	return 0;
 }
 void myInputBuffFlush(void) //Cleans the buffer.
 {
