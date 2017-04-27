@@ -429,6 +429,7 @@ unsigned printBeautifully(char *s, unsigned spaces)
 		}
 		else
 		{
+			if (s[i] == '+' && s[i + 1] == '-') i++;
 			sprintf(stringToPrint + printIndex, "%c", s[i]);
 			printIndex++;
 		}
