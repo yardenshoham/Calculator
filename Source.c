@@ -42,7 +42,7 @@ int main()
 	}
 	showWork = userChar == 'Y' ? true : false;
 	userInput = modifyAndCheckForErrors(userInput, showWork);
-	printf("The answer is %.2f.\n", solveExpression(userInput, showWork));
+	printf("The answer is %g.\n", solveExpression(userInput, showWork));
 	return EXIT_SUCCESS;
 }
 double factorial(int number) //Returns the factorial of a given number.
@@ -181,7 +181,7 @@ double solveMath(char *problem, bool showCalculations, unsigned spaces) //Return
 					i = 0;
 					break;
 				}
-				else if (!isdigit(problem[j]))
+				else if (!isdigit(problem[j]) && problem[j] != '.')
 				{
 					strcpyUntilPlaceInMem(tempStr, problem + j + 1, problem + i);
 					problem = insertVALUEintoSTRinsteadOfPTR1toPTR2(factorial(atoi(tempStr)), problem, problem + j + 1, problem + i);
@@ -313,7 +313,7 @@ char* insertVALUEintoSTRinsteadOfPTR1toPTR2(double value, char *str, char *ptr1,
 		strcpy(part2, ptr2 + 1);
 	else
 		strcpy(part2, "\0");
-	sprintf(result, "%s%.12f%s", part1, value, part2);
+	sprintf(result, "%s%f%s", part1, value, part2);
 	free(part1);
 	free(part2);
 	free(str);
@@ -424,7 +424,7 @@ unsigned printBeautifully(char *s, unsigned spaces)
 				else sprintf(stringToPrint + printIndex, "%.2f", atof(tempNum));
 			}
 			else //If integer.
-				sprintf(stringToPrint + printIndex, "%d", atoi(tempNum));
+				sprintf(stringToPrint + printIndex, "%g", atof(tempNum));
 			printIndex = strlen(stringToPrint);
 		}
 		else
