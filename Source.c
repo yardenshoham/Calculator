@@ -180,7 +180,7 @@ double solveMath(char *problem, bool showCalculations) //Returns the number the 
 					i = 0;
 					break;
 				}
-				else if (!isdigit(problem[j]))
+				else if (!isdigit(problem[j]) && problem[j] != '.')
 				{
 					strcpyUntilPlaceInMem(tempStr, problem + j + 1, problem + i);
 					problem = insertVALUEintoSTRinsteadOfPTR1toPTR2(factorial(atoi(tempStr)), problem, problem + j + 1, problem + i);
