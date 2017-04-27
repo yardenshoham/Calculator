@@ -399,7 +399,9 @@ double solveExpression(char *expression, bool showCalculations) //Returns the nu
 	//Calculate final value.
 	return solveMath(expression, showCalculations, 0);
 }
-unsigned printBeautifully(char *s, unsigned spaces)
+unsigned printBeautifully(char *s, unsigned spaces) /*Prints a given string s in a manner that is nice to the human eye. Prints spaces amount of spaces unless spaces is
+													USER_INPUT_SIZE, in which case it returns the amount of characters from the start of the newly created string until
+													the most urgent opening parenthesis.*/
 {
 	unsigned i, j, point, printIndex = 0;
 	char tempNum[USER_INPUT_SIZE], stringToPrint[USER_INPUT_SIZE] = { 0 };
